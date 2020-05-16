@@ -25,6 +25,10 @@ import random
 import hashlib
 from binascii import hexlify, unhexlify
 
+# para texto em negrito
+class color:
+    BOLD = '\033[1m'
+    END = '\033[0m'
 
 # Parâmetros públicos p e g
 # PRIME = 3329499024484696430955445194464218832905973351121497617435753366182222251575714808510036328892050841
@@ -170,6 +174,9 @@ def modify_file(file):
     
     return str(new_file)
 
+def to_hex(*args):
+    return (hashlib.sha512(str(key)).hexdigest() for key in args)
+
 def main():
     """
     Função principal que ordena as chamadas de funções para realizar o que foi
@@ -193,158 +200,210 @@ def main():
     # print(hamming_distance_with_hex_strings('0x4123', '0x3189'))
 
 
-
     # 1.
-    print('\n# ---------- Item 1. ---------- #')
-    print('\n Chave Alice:')
+    title = ' Item 1 - Geração de chaves de Alice e Beto '
+    print('\n' + title.center(100, '-') + '\n')
+
+    print(' Chave Alice:\n')
+    
     pA, gA, SA, TA = elgamal_keygen(PRIME_A, GENERATOR_A)
-    print(pA, gA, SA, TA)
+    
+    print(
+        "prime: {}\n\n"        \
+        "generator: {}\n\n"    \
+        "secret_key: {}\n\n"   \
+        "public_key: {}"
+    .format(*to_hex(pA, gA, SA, TA)))
+
+    print('\n----------------')
 
     # 1.
-    print('\n Chave Beto:')
+    print('\n ' 'Chave Beto:\n')
+    
     pB, gB, SB, TB = elgamal_keygen(PRIME_B, GENERATOR_B)
-    print(pB, gB, SB, TB)
+    
+    print(
+        "prime: {}\n\n"        \
+        "generator: {}\n\n"  \
+        "secret_key: {}\n\n" \
+        "public_key: {}\n\n"
+    .format(*to_hex(pB, gB, SB, TB)))
    
     # 2
-    print('\n# ---------- Item 2. ---------- #')
+    title = ' Item 2 - Primeiros 100 caracteres de documento1 (em hexadecimal) '
+    print('\n' + title.center(100, '-') + '\n')
     nusp = 4367487
     num_bytes = int(1e5)
     random_bytes_hex = hexlify(os.urandom(num_bytes))
 
-    print('\n Primeiros 100 caracteres de documento1 (em hexadecimal):')
+    #print('\n Primeiros 100 caracteres de documento1 (em hexadecimal):')
     documento1 = str(nusp) + random_bytes_hex
-    print(documento1[:100])
+    print(documento1[:100] + '\n\n')
 
 
     # 3
-    print('\n# ---------- Item 3. ---------- #')
-    print('\n Primeiros 100 caracteres de documento2 (em hexadecimal):')
+    title = ' Item 3 - Primeiros 100 caracteres de documento2 (em hexadecimal) '
+    print('\n' + title.center(100, '-') + '\n')
+
+    #print('\n\n Primeiros 100 caracteres de documento2 (em hexadecimal):')
     documento2 = str(nusp + 1) + random_bytes_hex
-    print(documento2[:100])
+    print(documento2[:100] + '\n\n')
 
     # 4
-    print('\n# ---------- Item 4. ---------- #')
-    print('\n Hash de documento1 (hash1)')
-    hash1 = hashlib.sha512(documento1).hexdigest()
-    print(hash1)
+    title = ' Item 4 - Hash de documento1 e documento2 '
+    print('\n' + title.center(100, '-') + '\n')
 
-    print('\n Hash de documento2 (hash2)')
+    print(' Hash de documento1 (hash1)')
+    hash1 = hashlib.sha512(documento1).hexdigest()
+    print(hash1 + '\n\n')
+
+    print(' Hash de documento2 (hash2)')
     hash2 = hashlib.sha512(documento2).hexdigest()
-    print(hash2)
+    print(hash2 + '\n\n')
     
     # 5
-    print('\n# ---------- Item 5. ---------- #')
-    print('\n Assinatura de hash1')
+    title = ' Item 5 - Assinatura de hash1 e hash2 '
+    print('\n' + title.center(100, '-') + '\n')
+
+    print(' Assinatura de hash1')
     assinaturaHash1 = elgamal_sign(hash1, pA, gA, SA)
-    print(assinaturaHash1)
+    print("y: {}\n"  "z: {}\n".format(*to_hex(*assinaturaHash1)))
 
     print('\n Assinatura de hash2')
     assinaturaHash2 = elgamal_sign(hash1, pA, gA, SA)
-    print(assinaturaHash2)
+    print("y: {}\n"  "z: {}\n".format(*to_hex(*assinaturaHash2)))
 
     # 6
-    print('\n# ---------- Item 6. ---------- #')
-    print('\n Distancia de Hamming de assinaturaHash1 e assinaturaHash2')
+    title = ' Item 6 - Distância de Hamming de assinaturaHash1 e assinaturaHash2 '
+    print('\n' + title.center(100, '-') + '\n')
+    
     y1, z1 = assinaturaHash1
     y2, z2 = assinaturaHash2
     hamming_y = hamming_int(y1, y2)
     hamming_z = hamming_int(z1, z2)
-    print(hamming_y + hamming_z)
+    print(str(hamming_y + hamming_z) + '\n')
 
     # 7
-    print('\n# ---------- Item 7. ---------- #')
-    print('\n Verificação de assinaturaHash1 sobre hash1')
-    print(elgamal_verify(assinaturaHash1, hash1, pA, gA, TA))
+    title = ' Item 7 - Verificação de assinaturaHash1 sobre hash1 '
+    print('\n' + title.center(100, '-') + '\n')
+    
+    verify = elgamal_verify(assinaturaHash1, hash1, pA, gA, TA)
+    print(
+        "assinatura válida?: {}\n\n"        \
+        "lado esquerdo: {}\n\n"  \
+        "lado direito: {}\n\n"
+    .format(verify[0], *to_hex(*verify[1:])))
 
     # 8
-    print('\n# ---------- Item 8. ---------- #')
-    print('\n Verificação de assinaturaHash1 sobre hash2')
-    print(elgamal_verify(assinaturaHash1, hash2, pA, gA, TA))
+    title = ' Item 8 - Verificação de assinaturaHash1 sobre hash2 '
+    print('\n' + title.center(100, '-') + '\n')
+    
+    verify = elgamal_verify(assinaturaHash1, hash2, pA, gA, TA)
+    print(
+        "assinatura válida?: {}\n\n"        \
+        "lado esquerdo: {}\n\n"  \
+        "lado direito: {}\n\n"
+    .format(verify[0], *to_hex(*verify[1:])))
 
     # 9.1
-    print('\n# ---------- Item 9.1 ---------- #')
-    print('\n Hash do Arquivo arq1.txt (hashA)')
+    title = ' Item 9.1 - Hash do Arquivo arq1.txt (hashA) '
+    print('\n' + title.center(100, '-') + '\n')
+
     hashA = sha512_file('arq1.txt')
-    print(hashA)
+    print(hashA + '\n\n')
     
     # 9.2
-    print('\n# ---------- Item 9.2 ---------- #')
-    print('\n 9.2 Assinatura de hashA')
+    title = ' Item 9.2 - Assinatura de hashA '
+    print('\n' + title.center(100, '-') + '\n')
     assinaturaHashA = elgamal_sign(hashA, pA, gA, SA)
-    print(assinaturaHashA)
+    print("y: {}\n\nz: {}\n\n".format(*to_hex(*assinaturaHashA)))
     
     # 9.3
-    print('\n# ---------- Item 9.3 ---------- #')
-    print('\n Verificação de assinaturaHashA sobre hashA')
-    print(elgamal_verify(assinaturaHash1, hash1, pA, gA, TA))
+    title = ' Item 9.3 - Verificação de assinaturaHAshA sobre hashA '
+    print('\n' + title.center(100, '-') + '\n')
+
+    verify = elgamal_verify(assinaturaHashA, hashA, pA, gA, TA)
+    print(
+        "assinatura válida?: {}\n\n"        \
+        "lado esquerdo: {}\n\n"  \
+        "lado direito: {}\n\n"
+    .format(verify[0], *to_hex(*verify[1:])))
 
     # 9.4
-    #print('\n# ---------- Item 9.4 ---------- #')
+    # ---------- Item 9.4 ----------
     arq1 = read_file('arq1.txt')
     arq1mod = modify_file(arq1)
 
     # 9.5
-    print('\n# ---------- Item 9.5 ---------- #')
-    print('\n Hash de arq1.txt modificado (hashAmod)')
-    hashAmod = hashlib.sha512(arq1mod).hexdigest()
-    print(hashAmod)
+    title = ' Item 9.5 - Criação e assinatura de arq1.txt modificado '
+    print('\n' + title.center(100, '-') + '\n')
 
-    # 9.5
+    print(' Hash de arq1.txt modificado')
+    hashAmod = hashlib.sha512(arq1mod).hexdigest()
+    print(hashAmod + '\n')
+
     print('\n Assinatura de hashAmod')
     assinaturaHashAmod = elgamal_sign(hashAmod, pA, gA, SA)
-    print(assinaturaHashAmod)
+    print("y: {}\n\nz: {}\n\n".format(*to_hex(*assinaturaHashAmod)))
+
 
     # 9.6
-    print('\n# ---------- Item 9.6 ---------- #')
-    print('\n Distancia de Hamming de assinaturaHash1 e assinaturaHash2')
+    title = ' Item 9.6 - Distancia de Hamming de assinaturaHash1 e assinaturaHash2 '
+    print('\n' + title.center(100, '-') + '\n')
+
     y1, z1 = assinaturaHashA
     y2, z2 = assinaturaHashAmod
     hamming_y = hamming_int(y1, y2)
     hamming_z = hamming_int(z1, z2)
-    print(hamming_y + hamming_z)
+    print(str(hamming_y + hamming_z) + '\n')
 
     # 10.a
-    print('\n# ---------- Item 10.1 ---------- #')
-    arq1mod = read_file('arq1.txt') + str(y1) + str(z1)
-    print(arq1mod)
+    #print('\n\n\n\n# ---------- Item 10.1 ---------- #')
+    arq2 = read_file('arq1.txt') + str(y1) + str(z1)
+    #print(arq2)
 
     # 10.b
-    print('\n# ---------- Item 10.2 ---------- #')
-    print('\n Hash de arq1.txt | assinaturaHashA')
-    hash2 = hashlib.sha512(arq1mod).hexdigest()
-    print(hash2)
+    title = ' Item 10.2 - Hash de arq2 <- arq1 | assinaturaHashA '
+    print('\n' + title.center(100, '-') + '\n')
+
+    hash2 = hashlib.sha512(arq2).hexdigest()
+    print(hash2 + '\n\n')
 
     # 10.c
-    print('\n# ---------- Item 10.3 ---------- #')
+    title = ' Item 10.3 - Assinatura de Beto sobre arq2 '
+    print('\n' + title.center(100, '-') + '\n')
+
     hash1 = hashlib.sha512(arq1).hexdigest()
-    assinaturaHashA = elgamal_sign(hash1, pA, gA, SA)
+    #assinaturaHashA = elgamal_sign(hash1, pA, gA, SA)
     assinaturaHashB = elgamal_sign(hash2, pB, gB, SB)
-    print(assinaturaHashB)
+    print("y: {}\n\nz: {}\n\n".format(*to_hex(*assinaturaHashB)))
 
     # 10.d
-    print('\n# ---------- Item 10.4 ---------- #')
-    print(elgamal_verify(assinaturaHashB, hash2, pB, gB, TB))
-
+    title = ' Item 10.4 - Verificação da assinatura de Beto sobre arq2 '
+    print('\n' + title.center(100, '-') + '\n')
+    
+    verify = elgamal_verify(assinaturaHashB, hash2, pB, gB, TB)
+    print(
+        "assinatura válida?: {}\n\n"        \
+        "lado esquerdo: {}\n\n"  \
+        "lado direito: {}\n\n"
+    .format(verify[0], *to_hex(*verify[1:])))
+    
     # 11
-    print('\n# ---------- Item 11 ---------- #')
-    print('\n ua, ub:')
+    title = ' Item 11 - Aplicação do algoritmo KEM '
+    print('\n' + title.center(100, '-') + '\n')
+
     ra, ua, SA, TA = KEM_calculate_u(pA, gA)
     rb, ub, SB, TB = KEM_calculate_u(pA, gA)
-    print(ua, ub)
-    print('\n ka, kb:')
+    print("ua: {}\n\nub: {}\n\n".format(*to_hex(ua, ub)))
+    
     ka = KEM_get_key(ra, ub, pA, SA, TB)
     kb = KEM_get_key(rb, ua, pA, SB, TA)
-    ka = hashlib.sha512(str(ka)).hexdigest()
-    print(ka, kb)
+    print("KA: {}\n\nKB: {}\n\n".format(*to_hex(ka, kb)))
 
-    return
-
-    print('\n# ---------- Item 12 ---------- #')
-    print(hamming_int(ka, kb))
-
-    #pub, sec = elgamal_keygen()
-    #signature = elgamal_sign(filehash, sec)
-    #print(elgamal_verify(signature, filehash, pub))
+    title = ' Item 12 - Distância de Hamming entre KA e KB '
+    print('\n' + title.center(100, '-') + '\n')
+    print(str(hamming_int(ka, kb)) + '\n')
 
 if __name__ == '__main__':
     main()
